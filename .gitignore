@@ -27,3 +27,4 @@
 /compiled/labs/index.html
 _freeze/
 _site/
+*cache/
