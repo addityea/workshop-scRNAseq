@@ -1,8 +1,8 @@
 #! /bin/bash
 
 ## Example usage:
-#   ./download-labs.sh "https://github.com/NBISweden" "workshop-scRNAseq" "compiled/labs" "seurat" "work/labs"
-#   ./download-labs.sh "https://github.com/NBISweden" "workshop-scRNAseq" "compiled/labs" "scanpy" "work/labs"
+#   ./download-labs.sh "https://github.com/NBISweden" "workshop-scRNAseq" "compiled/labs" "seurat" "labs"
+#   ./download-labs.sh "https://github.com/NBISweden" "workshop-scRNAseq" "compiled/labs" "scanpy" "labs"
 
 ORG_URL="$1"
 REPO_NAME="$2"
@@ -10,8 +10,7 @@ REPO_DIR="$3"
 TOOLKIT="$4"
 LOCAL_DIR="$5"
 
-HOME="/home/jovyan"
-WORK="${HOME}/work"
+WORK="/work"
 KERNEL="scanpy"
 
 

@@ -477,7 +477,7 @@ for cl in adata.obs['leiden_0.6'].cat.categories.tolist():
     glist = sc.get.rank_genes_groups_df(adata, group=cl, key='wilcoxon')[
         'names'].squeeze().str.strip().tolist()
     enr_res = gseapy.enrichr(gene_list=glist[:300],
-                             organism='Human',
+                             organism='human',
                              gene_sets=gene_dict,
                              background=adata.shape[1],
                              cutoff=1)
