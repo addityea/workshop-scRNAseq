@@ -3,33 +3,9 @@ set -e
 
 HOME="/home/jovyan"
 
-pixi install --frozen --manifest-path ${HOME}/pixi.toml > /var/log/pixi/install.log 2>&1 && \
-    echo "ready" > /var/log/pixi/install.status || \
-    echo "failed" > /var/log/pixi/install.status &
-
-function make_scanpy_kernel() (
-    mkdir -p ${HOME}/.local/share/jupyter/kernels/scanpy
-    cat <<EOF > ${HOME}/.local/share/jupyter/kernels/scanpy/kernel.json
-{
-  "argv": [
-    "pixi", "run", "--frozen", "--manifest-path", "${HOME}/pixi.toml", "python",
-    "-Xfrozen_modules=off",
-    "-m",
-    "ipykernel_launcher",
-    "-f",
-    "{connection_file}"
-  ],
-  "display_name": "scanpy",
-  "language": "python",
-  "metadata": {
-    "debugger": true
-  },
-  "kernel_protocol_version": "5.5"
-}
-EOF
-)
-
-make_scanpy_kernel
+# The scanpy environment and the 'scanpy' kernel are baked into the image at
+# build time (see containers/dockerfiles/scanpy.Dockerfile); nothing is
+# installed when the container starts.
 
 exec jupyter lab \
     --no-browser \

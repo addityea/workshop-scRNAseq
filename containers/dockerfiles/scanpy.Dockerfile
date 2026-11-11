@@ -12,46 +12,52 @@ RUN apt-get update \
 COPY patches/rosetta_fix/nosigtrap.c /src/nosigtrap.c
 RUN gcc -O2 -fPIC -shared -o /libnosigtrap.so /src/nosigtrap.c -ldl
 
+# ---- Scanpy environment from Pixi, locked and installed at build time ----
+# Conda-style envs hardcode absolute paths, so the env is built at the exact
+# path it will run at (/home/jovyan/.pixi) and copied 1:1.
+FROM ghcr.io/prefix-dev/pixi:0.84.1 AS scanpy-env
+WORKDIR /home/jovyan
+COPY envs/scanpy/pixi.toml envs/scanpy/pixi.lock ./
+RUN pixi install --frozen
+
 FROM ghcr.io/scilifelabdatacentre/serve-jupyterlab-minimal:250213-1113
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-ARG TARGETARCH
-
 ENV HOME=/home/${NB_USER}
 
-# Configure  environment
 USER root
 
 COPY --from=rosetta-fix /libnosigtrap.so /opt/rossetafix/libnosigtrap.so
 ENV LD_PRELOAD=/opt/rossetafix/libnosigtrap.so
 
 COPY scripts/install_scanpy.sh /tmp/scripts/
-
 RUN /tmp/scripts/install_scanpy.sh
 
 ENV PATH="${HOME}/.pixi/bin:$PATH"
 
+# Prebuilt environment + manifest (pixi run stays instant, nothing installs
+# at container launch)
+COPY --from=scanpy-env /home/jovyan/.pixi/envs /home/jovyan/.pixi/envs
 COPY envs/scanpy/pixi.toml envs/scanpy/pixi.lock /home/jovyan/
 
 # Configure container start
 COPY scripts/scanpy-start-script.sh ${HOME}/start-script.sh
 COPY scripts/download-labs.sh ${HOME}/download-labs.sh
-COPY scripts/wait-for-env.sh /usr/local/bin/wait-for-env
 
 RUN chmod a+x ${HOME}/start-script.sh && \
-    chmod a+x ${HOME}/download-labs.sh && \
-    chmod +x /usr/local/bin/wait-for-env && \
-	mkdir -p /var/log/pixi && \
-	chown -R jovyan:users /var/log/pixi
+    chmod a+x ${HOME}/download-labs.sh
 
 RUN mkdir -p /home/jovyan/.local/share/jupyter && \
     chown -R jovyan:users /home/jovyan
 
 ENV PIXI_LOCKED=true
-ENV PIXI_CACHE_DIR=$HOME/work/.cache/rattler/cache
 
 USER ${NB_USER}
+
+# Register the course kernel into the image (also verifies the env at build)
+RUN /home/jovyan/.pixi/envs/default/bin/python -m ipykernel install \
+        --user --name scanpy --display-name scanpy
 
 WORKDIR ${HOME}
 

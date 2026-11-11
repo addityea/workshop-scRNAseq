@@ -22,6 +22,7 @@
 #define _GNU_SOURCE
 #include <signal.h>
 #include <dlfcn.h>
+#include <stddef.h>
 
 typedef int (*sigop_t)(int, const sigset_t *, sigset_t *);
 
