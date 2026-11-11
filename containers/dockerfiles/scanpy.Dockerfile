@@ -1,84 +1,58 @@
 # syntax=docker/dockerfile:1
-# =====================================================================
-# Scanpy lab image, multi-arch (linux/amd64 + linux/arm64), Pixi-based.
-#
-# - The Pixi environment is installed at BUILD time (locked), so the
-#   container starts instantly and reproducibly; no install-at-boot.
-# - The Pixi CLI plus pixi.toml/pixi.lock are placed in /home/jovyan so
-#   the documented `pixi run <CMD>` convention keeps working.
-# - linux/amd64 is the canonical build for SciLifeLab Serve; Apple
-#   Silicon machines pull the native linux/arm64 variant automatically.
-# - libnosigtrap.so (Rosetta fork() workaround, see
-#   patches/rosetta_fix/nosigtrap.c) is compiled for each target arch and
-#   LD_PRELOADED: inert on native hosts, but it rescues students who force
-#   `--platform=linux/amd64` on an M-chip Mac (apple/container#966).
-# =====================================================================
-
-# ---- Rosetta fix shim: cross-compiled at native speed per target ----
+# Rosetta fork() fix (macOS 26+): cross-compile the SIGTRAP interposer at
+# native build speed, then bake it into the amd64 course image. Without it,
+# Jupyter kernels in linux/amd64 containers hang at "Starting kernel..." on
+# Apple Silicon (apple/container#966). The shim is inert on real x86_64 hosts.
 FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS rosetta-fix
-ARG TARGETARCH
 RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-      gcc-x86-64-linux-gnu libc6-dev-amd64-cross \
-      gcc-aarch64-linux-gnu libc6-dev-arm64-cross \
+ && apt-get install -y --no-install-recommends gcc-x86-64-linux-gnu libc6-dev-amd64-cross \
  && rm -rf /var/lib/apt/lists/*
 COPY patches/rosetta_fix/nosigtrap.c /src/nosigtrap.c
-RUN if [ "$TARGETARCH" = "arm64" ]; then \
-      aarch64-linux-gnu-gcc -O2 -fPIC -shared -o /libnosigtrap.so /src/nosigtrap.c -ldl; \
-    else \
-      x86_64-linux-gnu-gcc -O2 -fPIC -shared -o /libnosigtrap.so /src/nosigtrap.c -ldl; \
-    fi
+RUN x86_64-linux-gnu-gcc -O2 -fPIC -shared -o /libnosigtrap.so /src/nosigtrap.c -ldl
 
-# ---- Pixi environment, installed frozen for the target platform ----
-# The builder WORKDIR must match the runtime path exactly: conda-style
-# envs hardcode absolute paths in shebangs and are not relocatable.
-FROM ghcr.io/prefix-dev/pixi:0.84.1 AS scanpy-env
-COPY envs/scanpy/pixi.toml envs/scanpy/pixi.lock /home/jovyan/
-WORKDIR /home/jovyan
-RUN pixi install --frozen
+FROM ghcr.io/scilifelabdatacentre/serve-jupyterlab-minimal:250213-1113
 
-# ---- Runtime ----
-FROM ubuntu:24.04 AS production
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-      ca-certificates curl git tini xz-utils \
- && rm -rf /var/lib/apt/lists/*
+ARG TARGETARCH
 
-# User and paths match the SDC serve images: jovyan (uid 1000), home
-# /home/jovyan, course data mounted at /home/jovyan/work, JupyterLab on
-# 8888. Serve deployment and the docs stay unchanged.
-RUN userdel -r ubuntu >/dev/null 2>&1 || true \
- && getent group users >/dev/null || groupadd -g 100 users \
- && useradd -m -u 1000 -g 100 -s /bin/bash jovyan \
- && mkdir -p /home/jovyan/work
+ENV HOME=/home/${NB_USER}
 
-# Pixi CLI + manifest + prebuilt environment. With the env already
-# installed and PIXI_LOCKED set, `pixi run` reuses it without re-solving.
-COPY --from=scanpy-env /usr/local/bin/pixi /usr/local/bin/pixi
-COPY envs/scanpy/pixi.toml envs/scanpy/pixi.lock /home/jovyan/
-COPY --from=scanpy-env /home/jovyan/.pixi /home/jovyan/.pixi
-ENV PIXI_LOCKED=true
+# Configure  environment
+USER root
 
-# Rosetta fork() fix for every process in the container
 COPY --from=rosetta-fix /libnosigtrap.so /opt/rossetafix/libnosigtrap.so
 ENV LD_PRELOAD=/opt/rossetafix/libnosigtrap.so
 
-COPY scripts/download-labs.sh /home/jovyan/download-labs.sh
-COPY scripts/scanpy-start-script.sh /home/jovyan/start-script.sh
-RUN chmod a+x /home/jovyan/download-labs.sh /home/jovyan/start-script.sh \
- && chown -R jovyan:users /home/jovyan
+COPY scripts/install_scanpy.sh /tmp/scripts/
 
-USER jovyan
-WORKDIR /home/jovyan
+RUN /tmp/scripts/install_scanpy.sh
 
-# Register the Jupyter kernel from the installed environment at build
-# time (the old image created a pixi-wrapped kernel spec at start).
-RUN /home/jovyan/.pixi/envs/default/bin/python -m ipykernel install \
-      --user --name scanpy --display-name scanpy
+ENV PATH="${HOME}/.pixi/bin:$PATH"
+
+COPY envs/scanpy/pixi.toml envs/scanpy/pixi.lock /home/jovyan/
+
+# Configure container start
+COPY scripts/scanpy-start-script.sh ${HOME}/start-script.sh
+COPY scripts/download-labs.sh ${HOME}/download-labs.sh
+COPY scripts/wait-for-env.sh /usr/local/bin/wait-for-env
+
+RUN chmod a+x ${HOME}/start-script.sh && \
+    chmod a+x ${HOME}/download-labs.sh && \
+    chmod +x /usr/local/bin/wait-for-env && \
+	mkdir -p /var/log/pixi && \
+	chown -R jovyan:users /var/log/pixi
+
+RUN mkdir -p /home/jovyan/.local/share/jupyter && \
+    chown -R jovyan:users /home/jovyan
+
+ENV PIXI_LOCKED=true
+ENV PIXI_CACHE_DIR=$HOME/work/.cache/rattler/cache
+
+USER ${NB_USER}
+
+WORKDIR ${HOME}
 
 EXPOSE 8888
-ENTRYPOINT ["/usr/bin/tini", "-g", "--"]
-CMD ["/home/jovyan/start-script.sh"]
+
+ENTRYPOINT ["tini", "-g", "--", "./start-script.sh"]

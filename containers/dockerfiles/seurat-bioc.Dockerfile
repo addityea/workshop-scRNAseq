@@ -1,15 +1,26 @@
 # syntax=docker/dockerfile:1
 # Rosetta fork() fix (macOS 26+): cross-compile the SIGTRAP interposer at
 # native build speed, then bake it into the amd64 course image. Without it,
-# RStudio/Python kernels in linux/amd64 containers hang on startup at
-# "Starting kernel..." on Apple Silicon (apple/container#966). The shim is
-# inert on real x86_64 hosts.
+# RStudio/Python kernels in linux/amd64 containers hang at "Starting
+# kernel..." on Apple Silicon (apple/container#966). The shim is inert on
+# real x86_64 hosts.
 FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS rosetta-fix
 RUN apt-get update \
  && apt-get install -y --no-install-recommends gcc-x86-64-linux-gnu libc6-dev-amd64-cross \
  && rm -rf /var/lib/apt/lists/*
 COPY patches/rosetta_fix/nosigtrap.c /src/nosigtrap.c
 RUN x86_64-linux-gnu-gcc -O2 -fPIC -shared -o /libnosigtrap.so /src/nosigtrap.c -ldl
+
+# ---- Seurat/Bioconductor environment from Pixi, locked at build time ----
+# Conda-style envs hardcode absolute paths and are NOT relocatable, so the
+# builder path below is baked into the binaries. It is exposed at
+# /usr/local/conda/envs/seurat via a symlink: that is the path the start
+# script (conda activate seurat, R_HOME=.../lib/R) and the Bioconductor
+# labs (basilisk condapath) already expect.
+FROM ghcr.io/prefix-dev/pixi:0.84.1 AS seurat-env
+COPY envs/seurat/pixi.toml envs/seurat/pixi.lock /opt/seurat-pixi/
+WORKDIR /opt/seurat-pixi
+RUN pixi install --frozen
 
 FROM ghcr.io/scilifelabdatacentre/serve-rstudio:250304-1611
 
@@ -24,13 +35,9 @@ COPY scripts/install_seurat_bioc.sh /tmp/scripts/
 
 RUN /tmp/scripts/install_seurat_bioc.sh
 
-COPY conda/seurat-bioc-environment-2025.yaml conda/seurat-bioc-conda-lock.yaml /tmp/conda/
-
-RUN /usr/local/conda/bin/conda-lock install \
-    --conda /usr/local/conda/bin/conda \
-    --prefix /usr/local/conda/envs/seurat \
-    /tmp/conda/seurat-bioc-conda-lock.yaml \
-    && /usr/local/conda/bin/conda clean --all -f -y
+# Replace the old conda-lock install with the Pixi-built environment
+COPY --from=seurat-env /opt/seurat-pixi/.pixi /opt/seurat-pixi/.pixi
+RUN ln -s /opt/seurat-pixi/.pixi/envs/default /usr/local/conda/envs/seurat
 
 # Configure container start
 COPY scripts/seurat-start-script.sh ${HOME}/start-script.sh

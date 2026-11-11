@@ -10,8 +10,8 @@ This repo contains the course material for NBIS workshop **Single Cell RNA-Seq D
 # for seurat and bioconductor labs
 docker pull --platform=linux/amd64 ghcr.io/nbisweden/workshop-scrnaseq-seurat:20250320-2311`
 
-# for scanpy labs (multi-arch: amd64 + arm64)
-docker pull ghcr.io/nbisweden/workshop-scrnaseq-scanpy:20260323-2301
+# for scanpy labs
+docker pull --platform=linux/amd64 ghcr.io/nbisweden/workshop-scrnaseq-scanpy:20260323-2301
 ```
 
 ## Run labs interactively (locally)
@@ -33,10 +33,8 @@ Open in browser: `http://localhost:8787/`
 - To run Python labs in JupyterLab
 
 ```
-docker run --rm -p 8888:8888 -v ${PWD}:/home/jovyan/work ghcr.io/nbisweden/workshop-scrnaseq-scanpy:20260323-2301
+docker run --rm --platform=linux/amd64 -p 8888:8888 -v ${PWD}:/home/jovyan/work ghcr.io/nbisweden/workshop-scrnaseq-scanpy:20260323-2301
 ```
-
-> The Scanpy image is multi-arch: Apple Silicon machines automatically pull the native arm64 build, Intel/Linux machines pull x86_64. Do not pass `--platform=linux/amd64` here; that forces emulated x86_64 even on M-chips. The Seurat/Bioconductor image below is x86_64-only and does need the flag plus Rosetta.
 
 Open in browser: `http://localhost:8888/lab` and use password `scrnaseq`
 

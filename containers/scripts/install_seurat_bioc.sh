@@ -43,6 +43,10 @@ curl -o quarto-linux-amd64.deb -sL https://github.com/quarto-dev/quarto-cli/rele
     && rm -rf ./quarto-linux-amd64.deb \
 
 ## Install Miniconda
+## Only the base conda is needed now: the seurat env itself comes from
+## Pixi (see Dockerfile), and the start script still activates it via
+## `conda activate seurat`. mamba/conda-lock removed (no longer used,
+## saves several hundred MB).
 curl -o ${HOME}/miniconda.sh -sL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash ${HOME}/miniconda.sh -bfp /usr/local/conda
 rm -rf ${HOME}/miniconda.sh
@@ -54,15 +58,6 @@ rm -rf ${HOME}/miniconda.sh
 /usr/local/conda/bin/conda init bash
 su - ${USER} -c "/usr/local/conda/bin/conda init bash"
 source ${HOME}/.bashrc
-
-## Install mamba
-conda install --yes -n base -c conda-forge mamba
-eval "$(mamba shell hook --shell bash)"
-mamba shell init --shell bash
-source ${HOME}/.bashrc
-
-## Install conda-lock
-mamba install --yes --channel conda-forge conda-lock
 
 ## Clean up
 apt-get clean

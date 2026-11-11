@@ -4,7 +4,6 @@ set -e
 
 ## Build ARGs
 NCPUS=${NCPUS:--1}
-QUARTO_VERSION="1.8.27"
 
 ## Function to install apt packages only if they are not installed
 function apt_install() {
@@ -16,21 +15,15 @@ function apt_install() {
     fi
 }
 
+## curl/git/jq are what the labs and download-labs.sh actually use.
+## Slimmed down: the gcc/g++/libfmt-dev toolchain and the quarto-cli
+## (~400 MB) were never needed by the Scanpy labs. The compiled labs
+## students download are .ipynb; qmd compilation happens in the separate
+## site image (scripts/compile.sh uses DOCKER_SITE).
 apt_install \
     curl \
-    g++ \
-    gcc \
-    gdebi \
-	jq \
-    libfmt-dev
-
-## Install quarto cli
-curl -o quarto-linux-${TARGETARCH}.deb -L https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-${TARGETARCH}.deb
-gdebi --non-interactive quarto-linux-${TARGETARCH}.deb
-rm -rf quarto-linux-${TARGETARCH}.deb
-
-## Install Quarto Jupyter extension
-python3 -m pip install jupyterlab-quarto
+    jq \
+    git
 
 ## Install Pixi
 curl -fsSL https://pixi.sh/install.sh | bash
