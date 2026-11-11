@@ -16,6 +16,7 @@
 
 # ---- Rosetta fix shim: cross-compiled at native speed per target ----
 FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS rosetta-fix
+ARG TARGETARCH
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       gcc-x86-64-linux-gnu libc6-dev-amd64-cross \
@@ -29,9 +30,11 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
     fi
 
 # ---- Pixi environment, installed frozen for the target platform ----
+# The builder WORKDIR must match the runtime path exactly: conda-style
+# envs hardcode absolute paths in shebangs and are not relocatable.
 FROM ghcr.io/prefix-dev/pixi:0.84.1 AS scanpy-env
-COPY envs/scanpy/pixi.toml envs/scanpy/pixi.lock /app/
-WORKDIR /app
+COPY envs/scanpy/pixi.toml envs/scanpy/pixi.lock /home/jovyan/
+WORKDIR /home/jovyan
 RUN pixi install --frozen
 
 # ---- Runtime ----
@@ -56,7 +59,7 @@ RUN userdel -r ubuntu >/dev/null 2>&1 || true \
 # installed and PIXI_LOCKED set, `pixi run` reuses it without re-solving.
 COPY --from=scanpy-env /usr/local/bin/pixi /usr/local/bin/pixi
 COPY envs/scanpy/pixi.toml envs/scanpy/pixi.lock /home/jovyan/
-COPY --from=scanpy-env /app/.pixi /home/jovyan/.pixi
+COPY --from=scanpy-env /home/jovyan/.pixi /home/jovyan/.pixi
 ENV PIXI_LOCKED=true
 
 # Rosetta fork() fix for every process in the container
