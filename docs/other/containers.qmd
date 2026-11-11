@@ -119,7 +119,7 @@ Navigate to `/home/jovyan/work/labs/` and open the `.qmd` files.
 ### Scanpy
 
 ::: {.callout-important}
-If you are using an Apple Silicon (M-chip) you need to follow the Colima [instructions](https://nbisweden.github.io/workshop-scRNAseq/other/docker.html#running-linux-x86_64-containers-on-apple-silicon)!
+If you are using an Apple Silicon (M-chip), enable **Use Rosetta for x86/amd64 emulation on Apple Silicon** in Docker Desktop settings, as described in the [Docker setup instructions](https://nbisweden.github.io/workshop-scRNAseq/other/docker.html#running-linux-x86_64-containers-on-apple-silicon)!
 :::
 
 ::: {.callout-tip}
@@ -130,9 +130,6 @@ To avoid running out of memory, restart the kernel (_Kernel > Restart Kernel_) a
 cd /path/to/labs  # replace this with the full path to the workshop compiled lab folder
 docker pull --platform=linux/amd64 ghcr.io/nbisweden/workshop-scrnaseq-scanpy:20260323-2301
 docker run --platform=linux/amd64 --rm -p 8888:8888 -v ${PWD}:/home/jovyan/work ghcr.io/nbisweden/workshop-scrnaseq-scanpy:20260323-2301
-
-# Apple Silicon with Colima
-docker run --rm --platform=linux/amd64 -p 8888:8888 -v scanpy-labs:/home/jovyan/work ghcr.io/nbisweden/workshop-scrnaseq-scanpy:20260323-2301
 ```
 
 Do not close the terminal! In the browser, go to [localhost:8888](localhost:8888/lab). Use the following credentials to log in to the JupyterLab server:  
