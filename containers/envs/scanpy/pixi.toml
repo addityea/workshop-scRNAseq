@@ -1,8 +1,8 @@
 [workspace]
-authors = ["Susanne Reinsbach <susanne.reinsbach@scilifelab.se>"]
+authors = ["Susanne Reinsbach <susanne.reinsbach@scilifelab.se>", "Aditya Singh <dr.singhaditya@hotmail.com>"]
 channels = ["conda-forge", "bioconda"]
 name = "scanpy-2026"
-platforms = ["linux-64"]
+platforms = ["linux-64", "linux-aarch64"]
 version = "0.1.0"
 
 [tasks]
@@ -12,7 +12,6 @@ anndata = ">=0.12.10,<0.13"
 bbknn = ">=1.6.0,<2"
 cellrank = ">=2.0.7,<3"
 celltypist = ">=1.7.1,<2"
-fa2_modified = "==0.4"
 gseapy = ">=1.1.11,<2"
 harmonypy = ">=0.2.0,<0.3"
 ipykernel = ">=7.2.0,<8"
@@ -30,6 +29,8 @@ pybiomart = ">=0.2.0,<0.3"
 pygam = "==0.12.0"
 python = ">=3.12.12,<3.13"
 python-igraph = ">=1.0.0,<2"
+argon2-cffi = ">=23.1,<24"
+jupyterlab = ">=4.3,<5"
 scanorama = ">=1.7.4,<2"
 scanpy = ">=1.12,<2"
 scikit-learn = "==1.6.1"
@@ -37,3 +38,9 @@ scipy = ">=1.16.3,<2"
 scrublet = ">=0.2.3,<0.3"
 scvi-tools = ">=1.4.1,<2"
 seaborn = ">=0.13.2,<0.14"
+
+# fa2_modified is the patched forceatlas2 that the linux-64 bbknn build
+# was compiled against. The aarch64 bbknn build carries no fa2 dependency
+# and fa2_modified has no aarch64 build, so it is pinned for linux-64 only.
+[target.linux-64.dependencies]
+fa2_modified = "==0.4"
