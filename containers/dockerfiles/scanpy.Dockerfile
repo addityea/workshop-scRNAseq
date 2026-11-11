@@ -1,14 +1,16 @@
 # syntax=docker/dockerfile:1
-# Rosetta fork() fix (macOS 26+): cross-compile the SIGTRAP interposer at
-# native build speed, then bake it into the amd64 course image. Without it,
-# Jupyter kernels in linux/amd64 containers hang at "Starting kernel..." on
-# Apple Silicon (apple/container#966). The shim is inert on real x86_64 hosts.
-FROM --platform=$BUILDPLATFORM debian:bookworm-slim AS rosetta-fix
+# Rosetta fork() fix (macOS 26+): compile the SIGTRAP interposer, then bake
+# it into the amd64 course image. Without it, Jupyter kernels in
+# linux/amd64 containers hang at "Starting kernel..." on Apple Silicon
+# (apple/container#966). The shim is inert on real x86_64 hosts.
+# Built from ubuntu:20.04 so the glibc baseline (2.31) matches the oldest
+# serve base (serve-rstudio, Ubuntu 20.04) and runs on newer bases too.
+FROM ubuntu:20.04 AS rosetta-fix
 RUN apt-get update \
- && apt-get install -y --no-install-recommends gcc-x86-64-linux-gnu libc6-dev-amd64-cross \
+ && apt-get install -y --no-install-recommends gcc libc6-dev \
  && rm -rf /var/lib/apt/lists/*
 COPY patches/rosetta_fix/nosigtrap.c /src/nosigtrap.c
-RUN x86_64-linux-gnu-gcc -O2 -fPIC -shared -o /libnosigtrap.so /src/nosigtrap.c -ldl
+RUN gcc -O2 -fPIC -shared -o /libnosigtrap.so /src/nosigtrap.c -ldl
 
 FROM ghcr.io/scilifelabdatacentre/serve-jupyterlab-minimal:250213-1113
 
