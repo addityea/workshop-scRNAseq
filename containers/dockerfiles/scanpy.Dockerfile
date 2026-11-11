@@ -29,7 +29,7 @@ RUN if [ "$TARGETARCH" = "arm64" ]; then \
     fi
 
 # ---- Pixi environment, installed frozen for the target platform ----
-FROM --platform=$TARGETPLATFORM ghcr.io/prefix-dev/pixi:0.84.1 AS scanpy-env
+FROM ghcr.io/prefix-dev/pixi:0.84.1 AS scanpy-env
 COPY envs/scanpy/pixi.toml envs/scanpy/pixi.lock /app/
 WORKDIR /app
 RUN pixi install --frozen
@@ -47,7 +47,8 @@ RUN apt-get update \
 # User and paths match the SDC serve images: jovyan (uid 1000), home
 # /home/jovyan, course data mounted at /home/jovyan/work, JupyterLab on
 # 8888. Serve deployment and the docs stay unchanged.
-RUN groupadd -g 100 users \
+RUN userdel -r ubuntu >/dev/null 2>&1 || true \
+ && getent group users >/dev/null || groupadd -g 100 users \
  && useradd -m -u 1000 -g 100 -s /bin/bash jovyan \
  && mkdir -p /home/jovyan/work
 

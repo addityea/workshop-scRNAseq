@@ -36,10 +36,21 @@ jobs:
               - "containers/patches/rosetta_fix/**"
               - "containers/scripts/**"
 
-  scanpy:
+  # Each arch builds on a native runner (no QEMU), pushed under a
+  # per-platform tag, then merged into one multi-arch manifest.
+  build:
     needs: changes
     if: ${{ needs.changes.outputs.scanpy == 'true' }}
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+            arch: amd64
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
       packages: write
@@ -60,25 +71,43 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
-        with:
-          images: |
-            ghcr.io/${{ env.GITHUB_ORG }}/${{ env.SCANPY_REPO_NAME }}
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
-            type=raw,value={{date 'YYYYMMDD-HHmm' tz='Europe/Stockholm'}}
-            type=sha
-
-      - name: Build and push Docker image
-        id: build-and-push
+      - name: Build and push per-arch image
         uses: docker/build-push-action@v6
         with:
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=scanpy-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=scanpy-${{ matrix.arch }}
           context: ./containers
           file: ./containers/dockerfiles/scanpy.Dockerfile
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          platforms: ${{ matrix.platform }}
+          tags: |
+            ghcr.io/${{ env.GITHUB_ORG }}/${{ env.SCANPY_REPO_NAME }}:arch-${{ matrix.arch }}
           push: true
+
+  manifest:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute tags
+        id: tags
+        run: |
+          echo "date_tag=$(TZ=Europe/Stockholm date +%Y%m%d-%H%M)" >> "$GITHUB_OUTPUT"
+          echo "sha_tag=$(echo ${GITHUB_SHA::7})" >> "$GITHUB_OUTPUT"
+
+      - name: Merge into multi-arch manifest
+        run: |
+          IMAGE=ghcr.io/${GITHUB_ORG}/${SCANPY_REPO_NAME}
+          docker buildx imagetools create \
+            -t "${IMAGE}:${{ steps.tags.outputs.date_tag }}" \
+            -t "${IMAGE}:latest" \
+            -t "${IMAGE}:${{ steps.tags.outputs.sha_tag }}" \
+            "${IMAGE}:arch-amd64" "${IMAGE}:arch-arm64"
