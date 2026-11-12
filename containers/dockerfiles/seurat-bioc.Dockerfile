@@ -63,6 +63,14 @@ RUN /opt/seurat-pixi/.pixi/envs/default/bin/Rscript -e ' \
   missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]; \
   if (length(missing)) stop("lab package install failed: ", \
                             paste(missing, collapse = ", "))'
+# Bake the Azimuth reference into the image. RunAzimuth(reference="pbmcref")
+# fetches it via InstallData -> install.packages(), which needs a writable R
+# library; students run as jovyan and cannot write the env's site-library.
+# Installing it here (as root, at build time) also removes a ~200 MB runtime
+# download from the celltyping lab.
+RUN /opt/seurat-pixi/.pixi/envs/default/bin/Rscript -e ' \
+  SeuratData::InstallData("pbmcref"); \
+  if (!"pbmcref" %in% names(SeuratData::InstalledData())) stop("pbmcref reference not baked")'
 
 FROM ghcr.io/scilifelabdatacentre/serve-rstudio:250304-1611 AS course
 
