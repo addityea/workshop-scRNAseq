@@ -263,7 +263,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/markdown-3.10.2-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/markdown-it-py-4.0.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-inline-0.2.1-pyhd8ed1ab_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-scalebar-0.9.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-venn-1.1.2-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/mdurl-0.1.2-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/ml-collections-1.0.0-pyh29332c3_0.conda
@@ -3718,16 +3717,6 @@ packages:
   license_family: BSD
   size: 15175
   timestamp: 1761214578417
-- conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-scalebar-0.9.0-pyhd8ed1ab_0.conda
-  sha256: 20085f78b3fca5e8696264bd47fdd4c76bf2085ebf819bddda27cd6cf2c31117
-  md5: 05cf7fe9bbd45b12eb6c0ea8fd747307
-  depends:
-  - matplotlib-base
-  - python >=3.9
-  license: MIT
-  license_family: MIT
-  size: 21170
-  timestamp: 1737197680653
 - conda: https://conda.anaconda.org/conda-forge/noarch/matplotlib-venn-1.1.2-pyhd8ed1ab_0.conda
   sha256: 369d62b18eb6713b0c672bdd0e114459e2dd4bcd04f3785f37f5df83ba3dc0dd
   md5: c487d11e4097cee1b89be316be187638

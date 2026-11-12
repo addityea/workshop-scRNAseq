@@ -21,7 +21,6 @@ apt-get install -y --no-install-recommends \
     libxt6 \
     locales \
     patch \
-    software-properties-common \
     vim
 
 apt-get update && apt-get install -y git
@@ -29,9 +28,10 @@ apt-get update && apt-get install -y git
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 locale-gen
 
-add-apt-repository ppa:ubuntu-toolchain-r/test
-apt-get -yq update
-apt-get -yq install --no-install-recommends libstdc++6
+## NOTE: the old ppa:ubuntu-toolchain-r/test repo (for a newer libstdc++6)
+## has been retired upstream; the PPA lookup broke the build. The conda/Pixi
+## env carries its own libstdc++ via RPATH, so the system one is not used
+## by R. Dropping the PPA lines entirely.
 
 ## Install tini
 curl -o /tini -sL https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini
