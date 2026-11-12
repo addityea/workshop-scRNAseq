@@ -1,12 +1,13 @@
 # Pixi workspace for the Seurat/Bioconductor lab image.
-# Same package pins as containers/conda/seurat-bioc-environment-2025.yaml
+# Adapted from the previous Conda environment: same package pins as
+# containers/conda/seurat-bioc-environment-2025.yaml
 # (Bioconductor 3.19 / R 4.3.3 vintage), now solved and locked by pixi.
 # The image installs this frozen at build time and exposes the env at
 # /usr/local/conda/envs/seurat (symlink), which is the path the Seurat and
 # Bioconductor labs hardcode as basilisk `condapath`. The start script puts
 # the env on PATH; conda itself is not installed.
 [workspace]
-authors = ["NBIS workshop-scRNAseq course team", "Aditya Singh <aditya.singh@nbis.se>"]
+authors = ["Aditya Singh <aditya.singh@nbis.se>"]
 channels = ["conda-forge", "bioconda"]
 name = "seurat-bioc-2026"
 platforms = ["linux-64"]
