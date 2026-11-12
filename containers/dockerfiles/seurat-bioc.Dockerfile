@@ -22,11 +22,20 @@ FROM ghcr.io/prefix-dev/pixi:0.84.1 AS seurat-env
 COPY envs/seurat/pixi.toml envs/seurat/pixi.lock /opt/seurat-pixi/
 WORKDIR /opt/seurat-pixi
 RUN pixi install --frozen
-# Bioconductor *data* packages (e.g. GenomeInfoDbData) deliver their payload
-# via conda post-link scripts, which pixi/rattler does not execute. Install
-# the one data package this env needs from the Bioconductor release server,
-# matching the env's Bioconductor version (3.18, see lock biocversion).
-RUN /opt/seurat-pixi/.pixi/envs/default/bin/Rscript -e 'BiocManager::install("GenomeInfoDbData", lib = file.path(R.home("library")), version = "3.18", update = FALSE, ask = FALSE)'
+# Bioconductor *data* packages (payload in Bioconductor's data/annotation and
+# data/experiment repositories) ship as empty stubs on bioconda; their conda
+# post-link scripts do the actual install, and pixi/rattler never runs
+# post-link scripts. Without this step, scater/scran/batchelor/scDblFinder/
+# scmap/Signac/celldex all fail to load at runtime. The old conda-lock flow
+# got these implicitly via post-links; replicate them here explicitly.
+# (go.db/org.Hs.eg.db/BSgenome/EnsDb/JASPAR are data payloads of top-level
+# course packages; GenomeInfoDbData is a hard dependency of GenomeInfoDb.)
+RUN /opt/seurat-pixi/.pixi/envs/default/bin/Rscript -e ' \
+  data_pkgs <- c("GenomeInfoDbData", "GO.db", "org.Hs.eg.db", \
+                 "BSgenome.Hsapiens.UCSC.hg38", "EnsDb.Hsapiens.v86", \
+                 "JASPAR2020", "celldex"); \
+  BiocManager::install(data_pkgs, lib = file.path(R.home("library")), \
+                       version = "3.18", update = FALSE, ask = FALSE, Ncpus = 2)'
 
 FROM ghcr.io/scilifelabdatacentre/serve-rstudio:250304-1611
 
