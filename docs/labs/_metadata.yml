@@ -180,7 +180,7 @@ int_scanorama: "Scanorama"
 int_scanorama_1: "Try out [Scanorama](https://github.com/brianhie/scanorama) for data integration as well. First we need to create individual AnnData objects from each of the datasets."
 
 int_plot: "We can now plot the unintegrated and the integrated space reduced dimensions."
-int_conclusion: "Look at the different integration results, which one do you think looks the best? How would you motivate selecting one method over the other? How do you think you could best evaluate if the integration worked well?"
+int_conclusion: "Look at the different integration results, which one do you think looks the best? How would you motivate selecting one method over the other? How do you think you could best evaluate if the integration worked well? (For background: published benchmarks score integrations on two axes, batch mixing vs. biology preservation, see Luecken et al., Nat Methods 2022, doi:10.1038/s41592-021-01336-8)"
 
 int_save: "Let's save the integrated data for further analysis."
 

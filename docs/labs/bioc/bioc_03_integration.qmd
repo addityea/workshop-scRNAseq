@@ -15,7 +15,8 @@ Code chunks run R commands unless otherwise specified.
 |:---|:---|:---|:---|
 |CCA | R | Seurat | [Cell](https://www.sciencedirect.com/science/article/pii/S0092867419305598?via%3Dihub)|
 |MNN | R/Python | Scater/Scanpy | [Nat. Biotech.](https://www.nature.com/articles/nbt.4091)|
-|Conos | R | conos | [Nat. Methods](https://www.nature.com/articles/s41592-019-0466-z?error=cookies_not_supported&code=5680289b-6edb-40ad-9934-415dac4fdb2f)|
+|Harmony | R | harmony | [Nat. Methods](https://doi.org/10.1038/s41592-019-0619-0)|
+|Conos | R | conos | [Nat. Methods](https://doi.org/10.1038/s41592-019-0466-z)|
 |Scanorama | Python | scanorama | [Nat. Biotech.](https://www.nature.com/articles/s41587-019-0113-3)|
 
 ## {{< meta int_prep >}}

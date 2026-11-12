@@ -12,11 +12,11 @@ Code chunks run Python commands unless it starts with `%%bash`, in which case, t
 
 {{< meta int_1 >}}
 
-|Markdown | Language | Library | Ref|
+|Method | Language | Library | Ref|
 |:---|:---|:---|:---|
-|CCA | R | Seurat | [Cell](https://www.sciencedirect.com/science/article/pii/S0092867419305598?via%3Dihub)|
-|MNN | R/Python | Scater/Scanpy | [Nat. Biotech.](https://www.nature.com/articles/nbt.4091)|
-|Conos | R | conos | [Nat. Methods](https://www.nature.com/articles/s41592-019-0466-z?error=cookies_not_supported&code=5680289b-6edb-40ad-9934-415dac4fdb2f)|
+|bbknn | Python | scanpy (bbknn) | [Bioinformatics](https://doi.org/10.1093/bioinformatics/btz625)|
+|Harmony | Python | harmonypy | [Nat. Methods](https://www.nature.com/articles/s41592-019-0619-0)|
+|ComBat | Python | scanpy (pp.combat) | [Biostatistics](https://doi.org/10.1093/biostatistics/kxj037)|
 |Scanorama | Python | scanorama | [Nat. Biotech.](https://www.nature.com/articles/s41587-019-0113-3)|
 
 ## {{< meta int_prep >}}
@@ -203,16 +203,12 @@ An alternative method for integration is Harmony, for more details on the method
 
 ```{python}
 #| label: harmony
-import scanpy.external as sce 
 import harmonypy as hm 
 
-## KNOWN BUG:
-# harmonypy==0.2.0 has a known bug described in https://github.com/slowkow/harmonypy/issues/49
-
-## Actual function call to run harmony:
-# sce.pp.harmony_integrate(adata, 'sample')
-
-## Fix to get 'X_pca_harmony' of the correct shape:
+# Note: do NOT use sc.external.pp.harmony_integrate here.
+# With harmonypy >= 0.2.0 the wrapper returns 'X_pca_harmony' with the
+# wrong orientation (see https://github.com/slowkow/harmonypy/issues/49),
+# so we call harmonypy directly and take Z_corr ourselves:
 
 # Extract PCs
 _pcs = adata.obsm['X_pca'] # (n_cells, n_pcs)
@@ -435,6 +431,8 @@ sc.pl.umap(adata, color="sample", title="Scanorama", ax=axs[1,1], show=False)
 Have a look at the documentation for [BBKNN](https://scanpy.readthedocs.io/en/latest/generated/scanpy.external.pp.bbknn.html#scanpy-external-pp-bbknn)
 
 Try changing some of the parameteres in BBKNN, such as distance metric, number of PCs and number of neighbors. How does the results change with different parameters? Can you explain why?
+
+If you want to go beyond the tutorial: the course Scanpy container also ships [scvi-tools](https://docs.scvi-tools.org/), a deep-learning toolkit whose models (scVI, scANVI, scARCHS) are covered at the end of the integration lecture. Its tutorials run on laptop CPUs for datasets of the size used in this course.
 
 ## {{< meta session >}}
 
