@@ -42,6 +42,20 @@ RUN /opt/seurat-pixi/.pixi/envs/default/bin/Rscript -e ' \
   missing <- data_pkgs[!vapply(data_pkgs, requireNamespace, logical(1), quietly = TRUE)]; \
   if (length(missing)) stop("Bioconductor data package install failed: ", \
                             paste(missing, collapse = ", "))'
+# DoubletFinder is not packaged on conda anywhere; install it at BUILD time
+# from the exact GitHub commit the lab used to pull at runtime, so student
+# notebooks never compile packages during class. (presto comes from bioconda
+# via pixi.toml; SeuratData and Azimuth likewise, SeuratData as an Azimuth
+# dependency. SeuratDisk was in the old runtime-install chunk but no lab
+# actually uses it, so it is dropped entirely.)
+RUN /opt/seurat-pixi/.pixi/envs/default/bin/Rscript -e ' \
+  remotes::install_github( \
+    "chris-mcginnis-ucsf/DoubletFinder@3b420df68b8e2a0cc6ebd4c5c1c7ea170464c97f", \
+    upgrade = FALSE, dependencies = NA); \
+  pkgs <- c("DoubletFinder", "presto", "SeuratData", "Azimuth"); \
+  missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]; \
+  if (length(missing)) stop("lab package install failed: ", \
+                            paste(missing, collapse = ", "))'
 
 FROM ghcr.io/scilifelabdatacentre/serve-rstudio:250304-1611 AS course
 

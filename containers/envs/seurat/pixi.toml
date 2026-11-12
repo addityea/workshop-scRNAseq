@@ -21,6 +21,17 @@ version = "0.1.0"
 # in the env so that works without any conda installation, envs or shell
 # hooks existing on the image.
 conda = ">=24,<27"
+# Labs used to install these from GitHub at runtime (compiling in class on
+# every run). These three are on bioconda; bake them in instead. (DoubletFinder
+# and SeuratData are not packaged anywhere; they are installed at build time
+# from their pinned GitHub commits, see the Dockerfile.)
+r-presto = "*"
+r-azimuth = "*"
+# Imports of the build-time GitHub install (DoubletFinder 2.0.4)
+r-rocr = "*"
+r-rappdirs = "*"
+r-cli = "*"
+r-crayon = "*"
 bioconductor-basilisk = "==1.14.1"
 bioconductor-batchelor = "==1.18.0"
 bioconductor-biobase = "==2.62.0"

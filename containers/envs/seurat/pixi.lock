@@ -50,7 +50,11 @@ environments:
       - conda: https://conda.anaconda.org/bioconda/linux-64/bioconductor-tfbstools-1.40.0-r43ha9d7317_1.tar.bz2
       - conda: https://conda.anaconda.org/bioconda/linux-64/bioconductor-xvector-0.42.0-r43ha9d7317_2.tar.bz2
       - conda: https://conda.anaconda.org/bioconda/linux-64/bioconductor-zlibbioc-1.48.0-r43ha9d7317_2.tar.bz2
+      - conda: https://conda.anaconda.org/bioconda/linux-64/r-azimuth-0.5.0-r43hdbdd923_0.tar.bz2
+      - conda: https://conda.anaconda.org/bioconda/linux-64/r-presto-1.0.0-r43h503566f_3.conda
       - conda: https://conda.anaconda.org/bioconda/linux-64/r-restfulr-0.0.15-r43h56115f1_4.tar.bz2
+      - conda: https://conda.anaconda.org/bioconda/linux-64/r-seurat-data-0.2.1-r43h9ee0642_0.tar.bz2
+      - conda: https://conda.anaconda.org/bioconda/linux-64/r-seurat-disk-0.0.0.9021-r43h9ee0642_0.tar.bz2
       - conda: https://conda.anaconda.org/bioconda/linux-64/r-signac-1.14.0-r43h21a89ab_0.tar.bz2
       - conda: https://conda.anaconda.org/bioconda/noarch/bioconductor-annotate-1.80.0-r43hdfd78af_0.tar.bz2
       - conda: https://conda.anaconda.org/bioconda/noarch/bioconductor-annotationdbi-1.64.1-r43hdfd78af_0.tar.bz2
@@ -133,7 +137,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/lcms2-2.20-h9073bf1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ld_impl_linux-64-2.46.1-default_hbd61a6d_103.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/lerc-4.3.0-he78707d_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libaec-1.1.7-h659bb9a_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libaec-1.1.8-h659bb9a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libarchive-3.8.1-gpl_h98cc613_100.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libblas-3.11.0-12_h4a7cf45_openblas.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libbrotlicommon-1.2.1-h39a168f_0.conda
@@ -196,7 +200,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/oniguruma-6.9.10-hebe6cf0_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/openjpeg-2.5.4-heb1ab33_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/openssl-3.6.5-h781a0a9_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/pandoc-3.13-ha770c72_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/pandoc-3.14-ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pango-1.56.4-hadf4263_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pcre2-10.47-h8b3dc9c_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/pillow-13.0.0-py311hf303fd3_0.conda
@@ -1569,6 +1573,79 @@ packages:
     - bioconductor-zlibbioc >=1.48.0,<1.49.0a0
   size: 25721
   timestamp: 1714564499272
+- conda: https://conda.anaconda.org/bioconda/linux-64/r-azimuth-0.5.0-r43hdbdd923_0.tar.bz2
+  sha256: 0392e7fecc6f175514bd69a8e6aceddcbf12b919c2010f7a0f91038291af0b9f
+  md5: a9cf6504c63d73188ecbedff5c8957ee
+  depends:
+  - bioconductor-bsgenome.hsapiens.ucsc.hg38 >=1.4.5,<1.5.0a0
+  - bioconductor-ensdb.hsapiens.v86 >=2.99.0,<2.100.0a0
+  - bioconductor-glmgampoi >=1.0.0
+  - bioconductor-glmgampoi >=1.14.0,<1.15.0a0
+  - bioconductor-jaspar2020 >=0.99.10,<0.100.0a0
+  - bioconductor-tfbstools >=1.40.0,<1.41.0a0
+  - libgcc-ng >=12
+  - libstdcxx-ng >=12
+  - r-base >=4.3,<4.4.0a0
+  - r-dt >=0.15
+  - r-future >=1.19.1
+  - r-ggplot2 >=3.3.2
+  - r-googlesheets4 >=0.2.0
+  - r-hdf5r >=1.3.2
+  - r-htmltools >=0.5.0
+  - r-httr >=1.4.2
+  - r-jsonlite >=1.7.0
+  - r-matrix >=1.2.18
+  - r-patchwork >=1.0.1
+  - r-plotly
+  - r-presto 1.0.0
+  - r-presto >=1.0.0,<1.0.1.0a0
+  - r-rcpp >=1.0.7
+  - r-rlang >=0.4.8
+  - r-scales >=1.1.1
+  - r-seurat >=5.0.0
+  - r-seurat-data 0.2.1
+  - r-seurat-data >=0.2.1,<0.2.2.0a0
+  - r-seurat-disk 0.0.0.9021
+  - r-seurat-disk >=0.0.0.9021,<0.0.0.9022.0a0
+  - r-seuratobject >=5.0.0
+  - r-shiny >=1.5.0
+  - r-shinybs >=0.61
+  - r-shinydashboard >=0.7.1
+  - r-shinyjs >=2.0.0
+  - r-signac >=1.12.0
+  - r-signac >=1.12.0,<2.0a0
+  - r-stringr >=1.4.0
+  - r-withr >=2.3.0
+  license: GPL-3.0-only
+  license_family: GPL3
+  run_exports:
+    weak:
+    - r-azimuth >=0.5.0,<0.5.1.0a0
+  size: 850956
+  timestamp: 1710799671437
+- conda: https://conda.anaconda.org/bioconda/linux-64/r-presto-1.0.0-r43h503566f_3.conda
+  sha256: 622a8533e23c40eab29cc4abc1e3a600087dda122593e23ecb6270872c05f690
+  md5: 8c558739ebe3abe9a3918ec5f9c870fa
+  depends:
+  - libgcc >=13
+  - libstdcxx >=13
+  - r-base >=4.3,<4.4.0a0
+  - r-data.table
+  - r-dplyr
+  - r-matrix
+  - r-purrr
+  - r-rcpp
+  - r-rcpparmadillo
+  - r-rlang
+  - r-tibble
+  - r-tidyr
+  license: GPL-3.0-only
+  license_family: GPL3
+  run_exports:
+    weak:
+    - r-presto >=1.0.0,<2.0a0
+  size: 528374
+  timestamp: 1755822391646
 - conda: https://conda.anaconda.org/bioconda/linux-64/r-restfulr-0.0.15-r43h56115f1_4.tar.bz2
   sha256: 882e737fed34d169353855766dd9a052425f6215259633ba68f2713cdf0fb3f1
   md5: 98d1b64d34553c9cafe9ad01bd956844
@@ -1588,6 +1665,43 @@ packages:
     - r-restfulr >=0.0.15,<0.1.0a0
   size: 438174
   timestamp: 1716546175189
+- conda: https://conda.anaconda.org/bioconda/linux-64/r-seurat-data-0.2.1-r43h9ee0642_0.tar.bz2
+  sha256: 78bc2c92b6b8d08a748f570bd00b54a97f427768dd0f369da98bea5ff1c5ceec
+  md5: 3618bdc28aaed13168dd6f971ef1a78c
+  depends:
+  - r-base >=4.3,<4.4.0a0
+  - r-cli
+  - r-crayon
+  - r-rappdirs
+  license: GPL-3.0-only
+  license_family: GPL3
+  run_exports:
+    weak:
+    - r-seurat-data >=0.2.1,<0.2.2.0a0
+  size: 83625
+  timestamp: 1710518127582
+- conda: https://conda.anaconda.org/bioconda/linux-64/r-seurat-disk-0.0.0.9021-r43h9ee0642_0.tar.bz2
+  sha256: 02215d0780a92228e13be386cd7b59bf2037d777a4289c7c9409bf1beebc4338
+  md5: 227e726f63476df7571f330b843aead9
+  depends:
+  - r-base >=4.3,<4.4.0a0
+  - r-cli >=2.0.1
+  - r-crayon >=1.3.4
+  - r-hdf5r >=1.3.0
+  - r-matrix >=1.2.18
+  - r-r6 >=2.4.1
+  - r-rlang >=0.4.4
+  - r-seurat >=3.2.0
+  - r-seuratobject >=4.0.0
+  - r-stringi >=1.4.6
+  - r-withr >=2.1.2
+  license: GPL-3.0-only
+  license_family: GPL3
+  run_exports:
+    weak:
+    - r-seurat-disk >=0.0.0.9021,<0.0.0.9022.0a0
+  size: 548107
+  timestamp: 1710517572711
 - conda: https://conda.anaconda.org/bioconda/linux-64/r-signac-1.14.0-r43h21a89ab_0.tar.bz2
   sha256: 607baa78e9ef220ce9cb2d426b3379843ba9ba9327ea9213446c72bea52e0e71
   md5: 03c3cb8b718707abbeb911bbd50ffccd
@@ -2968,9 +3082,9 @@ packages:
     - lerc >=4.3.0,<5.0a0
   size: 269911
   timestamp: 1793411350746
-- conda: https://conda.anaconda.org/conda-forge/linux-64/libaec-1.1.7-h659bb9a_0.conda
-  sha256: 8433f928a66158f08e7007ee3d8c6bb65af587532a1681409bafc8d3cc16c8fa
-  md5: 779052a50021fa0d3cf1a26c42bf15c6
+- conda: https://conda.anaconda.org/conda-forge/linux-64/libaec-1.1.8-h659bb9a_0.conda
+  sha256: 8713c688139eda3987985cc38e26a048e2df5a19559d3fa54653e3dd1b7af8b1
+  md5: e7260631cc8fec309a7f740a2ef1d1f6
   depends:
   - __glibc >=2.17,<3.0.a0
   - libgcc >=15
@@ -2979,9 +3093,9 @@ packages:
   license_family: BSD
   run_exports:
     weak:
-    - libaec >=1.1.7,<2.0a0
-  size: 37683
-  timestamp: 1793231792836
+    - libaec >=1.1.8,<2.0a0
+  size: 38007
+  timestamp: 1794452473771
 - conda: https://conda.anaconda.org/conda-forge/linux-64/libarchive-3.8.1-gpl_h98cc613_100.conda
   sha256: 6f35e429909b0fa6a938f8ff79e1d7000e8f15fbb37f67be6f789348fea4c602
   md5: 9de6247361e1ee216b09cfb8b856e2ee
@@ -3928,14 +4042,14 @@ packages:
     - openssl >=3.6.5,<4.0a0
   size: 3195299
   timestamp: 1791098052301
-- conda: https://conda.anaconda.org/conda-forge/linux-64/pandoc-3.13-ha770c72_0.conda
-  sha256: 1aeedb498ad58c8f78176d5aaad11e32501d78dd6cdcd842e1a6d5c308e1830c
-  md5: 5ec50e0d9932dc31dd0f4e798160009c
+- conda: https://conda.anaconda.org/conda-forge/linux-64/pandoc-3.14-ha770c72_0.conda
+  sha256: c5f39b545973e6f343562f7ea31bcf691c45bc87ea85aeb67d14068626473a94
+  md5: 7abc8bcfb65cd6eb2f30e7e7d7403def
   license: GPL-2.0-or-later
   license_family: GPL
   run_exports: {}
-  size: 23494830
-  timestamp: 1793089533224
+  size: 23766802
+  timestamp: 1794474196485
 - conda: https://conda.anaconda.org/conda-forge/linux-64/pango-1.56.4-hadf4263_0.conda
   sha256: 3613774ad27e48503a3a6a9d72017087ea70f1426f6e5541dbdb59a3b626eaaf
   md5: 79f71230c069a287efe3a8614069ddf1
