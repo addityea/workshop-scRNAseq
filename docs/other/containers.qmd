@@ -53,12 +53,10 @@ In the case of both JupyterLab and RStudio you have access to persistent storage
 6. Inside the notebook server the script `download-labs.sh` is provided that will download the corresponding labs. It creates a `labs` folder with `.qmd` files (**Seurat**/**Bioconductor**) or `.ipynb` files (**Scanpy**). In the terminal, run any of the usage examples below:
   - Seurat
   ```
-  conda activate seurat
   ~/download-labs.sh "https://github.com/NBISweden" "workshop-scRNAseq" "compiled/labs" "seurat" "work/labs"
   ```
   - Bioconductor
   ```
-  conda activate seurat
   ~/download-labs.sh "https://github.com/NBISweden" "workshop-scRNAseq" "compiled/labs" "bioc" "work/labs"
   ```
   - Scanpy
@@ -105,12 +103,10 @@ Inside RStudio, the script `download-labs.sh` is provided that will download the
 
 - Seurat
 ```
-conda activate seurat
 ~/download-labs.sh "https://github.com/NBISweden" "workshop-scRNAseq" "compiled/labs" "seurat" "work/labs"
 ```
 - Bioconductor
 ```
-conda activate seurat
 ~/download-labs.sh "https://github.com/NBISweden" "workshop-scRNAseq" "compiled/labs" "bioc" "work/labs"
 ```
 

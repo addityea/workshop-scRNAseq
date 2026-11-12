@@ -42,22 +42,9 @@ curl -o quarto-linux-amd64.deb -sL https://github.com/quarto-dev/quarto-cli/rele
     && apt-get install -y ./quarto-linux-amd64.deb \
     && rm -rf ./quarto-linux-amd64.deb \
 
-## Install Miniconda
-## Only the base conda is needed now: the seurat env itself comes from
-## Pixi (see Dockerfile), and the start script still activates it via
-## `conda activate seurat`. mamba/conda-lock removed (no longer used,
-## saves several hundred MB).
-curl -o ${HOME}/miniconda.sh -sL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash ${HOME}/miniconda.sh -bfp /usr/local/conda
-rm -rf ${HOME}/miniconda.sh
-
-/usr/local/conda/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
-/usr/local/conda/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
-
-## Init conda for root and jovyan users
-/usr/local/conda/bin/conda init bash
-su - ${USER} -c "/usr/local/conda/bin/conda init bash"
-source ${HOME}/.bashrc
+## NOTE: Miniconda used to be installed here. It is gone: the course
+## environment comes from Pixi (containers/envs/seurat) and is placed at
+## /usr/local/conda/envs/seurat, which the start script puts on PATH.
 
 ## Clean up
 apt-get clean

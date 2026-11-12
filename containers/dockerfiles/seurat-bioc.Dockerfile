@@ -15,9 +15,9 @@ RUN gcc -O2 -fPIC -shared -o /libnosigtrap.so /src/nosigtrap.c -ldl
 # ---- Seurat/Bioconductor environment from Pixi, locked at build time ----
 # Conda-style envs hardcode absolute paths and are NOT relocatable, so the
 # builder path below is baked into the binaries. It is exposed at
-# /usr/local/conda/envs/seurat via a symlink: that is the path the start
-# script (conda activate seurat, R_HOME=.../lib/R) and the Bioconductor
-# labs (basilisk condapath) already expect.
+# /usr/local/conda/envs/seurat via a symlink: that is the path the
+# Bioconductor/Seurat integration labs hardcode as basilisk `condapath`.
+# The start script puts this env on PATH; conda is not installed at all.
 FROM ghcr.io/prefix-dev/pixi:0.84.1 AS seurat-env
 COPY envs/seurat/pixi.toml envs/seurat/pixi.lock /opt/seurat-pixi/
 WORKDIR /opt/seurat-pixi
@@ -38,7 +38,12 @@ RUN /tmp/scripts/install_seurat_bioc.sh
 
 # Replace the old conda-lock install with the Pixi-built environment
 COPY --from=seurat-env /opt/seurat-pixi/.pixi /opt/seurat-pixi/.pixi
-RUN ln -s /opt/seurat-pixi/.pixi/envs/default /usr/local/conda/envs/seurat
+RUN mkdir -p /usr/local/conda/envs \
+ && ln -s /opt/seurat-pixi/.pixi/envs/default /usr/local/conda/envs/seurat
+
+# R, Rscript and the basilisk python are on PATH for terminal sessions
+ENV PATH="/usr/local/conda/envs/seurat/bin:${PATH}"
+ENV R_HOME="/usr/local/conda/envs/seurat/lib/R"
 
 # Configure container start
 COPY scripts/seurat-start-script.sh ${HOME}/start-script.sh

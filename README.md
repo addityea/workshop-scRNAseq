@@ -38,12 +38,7 @@ docker run --rm --platform=linux/amd64 -p 8888:8888 -v ${PWD}:/home/jovyan/work 
 
 Open in browser: `http://localhost:8888/lab` and use password `scrnaseq`
 
-- In the container, start a terminal and run the command below to activate the respective environment.
-
-```
-# for seurat/bioconductor
-conda activate seurat
-```
+- In the **Seurat/Bioconductor** container, R and all course packages are already on the path, so nothing needs to be activated in the terminal.
 
 For Scanpy we are using Pixi as environment manager and you do not need to activate the environment. If you are running a command from `/home/jovyan` you just need to prepend any command with `pixi run <CMD>`. In any other directory, you need to tell Pixi which manifest to use as shown below.
 
