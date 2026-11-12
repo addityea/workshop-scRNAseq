@@ -19,6 +19,9 @@ RUN gcc -O2 -fPIC -shared -o /libnosigtrap.so /src/nosigtrap.c -ldl
 # Bioconductor/Seurat integration labs hardcode as basilisk `condapath`.
 # The start script puts this env on PATH; conda is not installed at all.
 FROM ghcr.io/prefix-dev/pixi:0.84.1 AS seurat-env
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends make \
+ && rm -rf /var/lib/apt/lists/*
 COPY envs/seurat/pixi.toml envs/seurat/pixi.lock /opt/seurat-pixi/
 WORKDIR /opt/seurat-pixi
 RUN pixi install --frozen
@@ -28,14 +31,17 @@ RUN pixi install --frozen
 # post-link scripts. Without this step, scater/scran/batchelor/scDblFinder/
 # scmap/Signac/celldex all fail to load at runtime. The old conda-lock flow
 # got these implicitly via post-links; replicate them here explicitly.
-# (go.db/org.Hs.eg.db/BSgenome/EnsDb/JASPAR are data payloads of top-level
+# (GO.db/org.Hs.eg.db/BSgenome/EnsDb/JASPAR are data payloads of top-level
 # course packages; GenomeInfoDbData is a hard dependency of GenomeInfoDb.)
 RUN /opt/seurat-pixi/.pixi/envs/default/bin/Rscript -e ' \
   data_pkgs <- c("GenomeInfoDbData", "GO.db", "org.Hs.eg.db", \
                  "BSgenome.Hsapiens.UCSC.hg38", "EnsDb.Hsapiens.v86", \
                  "JASPAR2020", "celldex"); \
   BiocManager::install(data_pkgs, lib = file.path(R.home("library")), \
-                       version = "3.18", update = FALSE, ask = FALSE, Ncpus = 2)'
+                       version = "3.18", update = FALSE, ask = FALSE, Ncpus = 2); \
+  missing <- data_pkgs[!vapply(data_pkgs, requireNamespace, logical(1), quietly = TRUE)]; \
+  if (length(missing)) stop("Bioconductor data package install failed: ", \
+                            paste(missing, collapse = ", "))'
 
 FROM ghcr.io/scilifelabdatacentre/serve-rstudio:250304-1611
 
