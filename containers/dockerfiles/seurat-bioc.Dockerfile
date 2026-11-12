@@ -45,14 +45,21 @@ RUN /opt/seurat-pixi/.pixi/envs/default/bin/Rscript -e ' \
 # DoubletFinder is not packaged on conda anywhere; install it at BUILD time
 # from the exact GitHub commit the lab used to pull at runtime, so student
 # notebooks never compile packages during class. (presto comes from bioconda
-# via pixi.toml; SeuratData and Azimuth likewise, SeuratData as an Azimuth
-# dependency. SeuratDisk was in the old runtime-install chunk but no lab
-# actually uses it, so it is dropped entirely.)
+# via pixi.toml; Azimuth likewise. SeuratDisk was in the old runtime-install
+# chunk but no lab actually uses it, so it is dropped entirely.)
+# SeuratData must ALSO be replaced at build time: bioconda ships only 0.2.1,
+# whose LoadData() cannot serve Azimuth references (RunAzimuth dies with
+# match.arg "'arg' should be one of raw/default/NA"). The pinned dev build,
+# which the labs used before, supports LoadData(type="azimuth").
 RUN /opt/seurat-pixi/.pixi/envs/default/bin/Rscript -e ' \
   remotes::install_github( \
     "chris-mcginnis-ucsf/DoubletFinder@3b420df68b8e2a0cc6ebd4c5c1c7ea170464c97f", \
     upgrade = FALSE, dependencies = NA); \
+  remotes::install_github( \
+    "satijalab/seurat-data@4dc08e022f51c324bc7bf785b1b5771d2742701d", \
+    upgrade = FALSE, dependencies = FALSE); \
   pkgs <- c("DoubletFinder", "presto", "SeuratData", "Azimuth"); \
+  if (packageVersion("SeuratData") < "0.2.2") stop("SeuratData still the old bioconda build"); \
   missing <- pkgs[!vapply(pkgs, requireNamespace, logical(1), quietly = TRUE)]; \
   if (length(missing)) stop("lab package install failed: ", \
                             paste(missing, collapse = ", "))'
