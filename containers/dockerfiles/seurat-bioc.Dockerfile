@@ -44,6 +44,9 @@ RUN mkdir -p /usr/local/conda/envs \
 # R, Rscript and the basilisk python are on PATH for terminal sessions
 ENV PATH="/usr/local/conda/envs/seurat/bin:${PATH}"
 ENV R_HOME="/usr/local/conda/envs/seurat/lib/R"
+# /etc/profile in the base rebuilds PATH for login shells, so also install a
+# profile.d snippet that re-prepends the course env.
+COPY scripts/seurat-env-profile.sh /etc/profile.d/zz-seurat-env.sh
 
 # Configure container start
 COPY scripts/seurat-start-script.sh ${HOME}/start-script.sh
@@ -57,7 +60,7 @@ USER jovyan
 
 RUN mkdir -p ${HOME}/work \
     && chown -R jovyan:users ${HOME}/work \
-    && cp ~/.bashrc ~/.bash_profile
+    && { [ -f ~/.bashrc ] && cp ~/.bashrc ~/.bash_profile || touch ~/.bash_profile; }
 
 WORKDIR ${HOME}
 
