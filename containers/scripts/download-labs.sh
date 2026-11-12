@@ -3,12 +3,14 @@
 ## Example usage:
 #   ./download-labs.sh "https://github.com/NBISweden" "workshop-scRNAseq" "compiled/labs" "seurat" "work/labs"
 #   ./download-labs.sh "https://github.com/NBISweden" "workshop-scRNAseq" "compiled/labs" "scanpy" "work/labs"
+#   ./download-labs.sh "https://github.com/NBISweden" "workshop-scRNAseq" "compiled/labs" "scanpy" "work/labs" "fix/technical"   # optional 6th arg: branch or tag (default: repo default branch)
 
 ORG_URL="$1"
 REPO_NAME="$2"
 REPO_DIR="$3"
 TOOLKIT="$4"
 LOCAL_DIR="$5"
+REF="${6:-}"
 
 HOME="/home/jovyan"
 WORK="${HOME}/work"
@@ -25,7 +27,11 @@ function select_kernel() (
 function main() (
     echo "downloading files from ${ORG_URL}/${REPO_NAME}/${REPO_DIR}/${TOOLKIT} into ${LOCAL_DIR}/..."
     mkdir -p ${LOCAL_DIR}
-    git clone -n --depth=1 --filter=tree:0 ${ORG_URL}/${REPO_NAME} > /dev/null 2>&1
+    if [ -n "${REF}" ]; then
+        git clone -n --depth=1 --filter=tree:0 --branch "${REF}" ${ORG_URL}/${REPO_NAME} > /dev/null 2>&1
+    else
+        git clone -n --depth=1 --filter=tree:0 ${ORG_URL}/${REPO_NAME} > /dev/null 2>&1
+    fi
     cd ${REPO_NAME}
     git sparse-checkout set --no-cone "${REPO_DIR}/${TOOLKIT}" "${REPO_DIR}/figs" > /dev/null 2>&1
     git checkout > /dev/null 2>&1
