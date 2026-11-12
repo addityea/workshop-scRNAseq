@@ -20,7 +20,7 @@ WORKDIR /home/jovyan
 COPY envs/scanpy/pixi.toml envs/scanpy/pixi.lock ./
 RUN pixi install --frozen
 
-FROM ghcr.io/scilifelabdatacentre/serve-jupyterlab-minimal:250213-1113
+FROM ghcr.io/scilifelabdatacentre/serve-jupyterlab-minimal:250213-1113 AS course
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -37,9 +37,11 @@ RUN /tmp/scripts/install_scanpy.sh
 ENV PATH="${HOME}/.pixi/envs/default/bin:${HOME}/.pixi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # Prebuilt environment + manifest (pixi run stays instant, nothing installs
-# at container launch)
-COPY --from=scanpy-env /home/jovyan/.pixi/envs /home/jovyan/.pixi/envs
-COPY envs/scanpy/pixi.toml envs/scanpy/pixi.lock /home/jovyan/
+# at container launch). --chown matters for image size: a later `chown -R`
+# over these files would re-copy the whole env into a second layer (~3 GB of
+# phantom duplicate; see "size trims" below).
+COPY --chown=jovyan:users --from=scanpy-env /home/jovyan/.pixi/envs /home/jovyan/.pixi/envs
+COPY --chown=jovyan:users envs/scanpy/pixi.toml envs/scanpy/pixi.lock /home/jovyan/
 
 # The serve-jupyterlab-minimal base carries a full conda installation
 # (/opt/conda) whose only job was to run JupyterLab; the Pixi env ships
@@ -61,8 +63,14 @@ COPY scripts/download-labs.sh ${HOME}/download-labs.sh
 RUN chmod a+x ${HOME}/start-script.sh && \
     chmod a+x ${HOME}/download-labs.sh
 
+# Only chown the paths that are actually root-owned at this point. Never
+# `chown -R /home/jovyan` after the env COPY: it re-writes every env file
+# into a fresh ~3 GB phantom layer (.pixi/envs is already jovyan-owned via
+# COPY --chown; only the .pixi dir itself and its bin/ are root's).
 RUN mkdir -p /home/jovyan/.local/share/jupyter && \
-    chown -R jovyan:users /home/jovyan
+    chown jovyan:users /home/jovyan /home/jovyan/.local /home/jovyan/.local/share /home/jovyan/.local/share/jupyter /home/jovyan/.pixi && \
+    chown -R jovyan:users /home/jovyan/.cache /home/jovyan/.pixi/bin && \
+    chown jovyan:users /home/jovyan/start-script.sh /home/jovyan/download-labs.sh
 
 ENV PIXI_LOCKED=true
 
@@ -76,4 +84,35 @@ WORKDIR ${HOME}
 
 EXPOSE 8888
 
+ENTRYPOINT ["tini", "-g", "--", "./start-script.sh"]
+
+# ---- Size trims applied in this image ----
+# 1. chown -R after COPY of the 3 GB env re-wrote every file into a phantom
+#    duplicate layer (~3 GB). Fixed via COPY --chown.
+# 2. Conda (847 MB) removed outright (JupyterLab ships in the Pixi env).
+# 3. Layer flattening (below): image size is the SUM of all layers, so files
+#    the base image or our RUNs deleted (conda, apt lists) still shipped as
+#    dead weight. The final stage rewrites the assembled root filesystem as
+#    one flattened layer; every config the runtime needs is re-declared.
+# This stage is the default build target, so GitHub Actions builds the same
+# flattened image without any workflow change.
+FROM scratch
+COPY --from=course / /
+ENV PATH="/home/jovyan/.pixi/envs/default/bin:/home/jovyan/.pixi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+    SHELL=/bin/bash \
+    NB_USER=jovyan \
+    NB_UID=1000 \
+    NB_GID=100 \
+    LC_ALL=en_US.UTF-8 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8 \
+    HOME=/home/jovyan \
+    JUPYTER_PORT=8888 \
+    LD_PRELOAD=/opt/rossetafix/libnosigtrap.so \
+    PIXI_LOCKED=true
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=3 \
+    CMD /home/jovyan/.pixi/envs/default/bin/python /etc/jupyter/docker_healthcheck.py || exit 1
+USER jovyan
+WORKDIR /home/jovyan
+EXPOSE 8888
 ENTRYPOINT ["tini", "-g", "--", "./start-script.sh"]

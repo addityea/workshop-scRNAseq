@@ -16,6 +16,11 @@ version = "0.1.0"
 [tasks]
 
 [dependencies]
+# basilisk (and the labs' basiliskRun(env=condapath, ...) calls) resolves a
+# pre-built env through the conda BINARY (reticulate::use_condaenv). Ship it
+# in the env so that works without any conda installation, envs or shell
+# hooks existing on the image.
+conda = ">=24,<27"
 bioconductor-basilisk = "==1.14.1"
 bioconductor-batchelor = "==1.18.0"
 bioconductor-biobase = "==2.62.0"

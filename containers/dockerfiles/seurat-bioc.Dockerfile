@@ -43,7 +43,7 @@ RUN /opt/seurat-pixi/.pixi/envs/default/bin/Rscript -e ' \
   if (length(missing)) stop("Bioconductor data package install failed: ", \
                             paste(missing, collapse = ", "))'
 
-FROM ghcr.io/scilifelabdatacentre/serve-rstudio:250304-1611
+FROM ghcr.io/scilifelabdatacentre/serve-rstudio:250304-1611 AS course
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -56,8 +56,11 @@ COPY scripts/install_seurat_bioc.sh /tmp/scripts/
 
 RUN /tmp/scripts/install_seurat_bioc.sh
 
-# Replace the old conda-lock install with the Pixi-built environment
-COPY --from=seurat-env /opt/seurat-pixi/.pixi /opt/seurat-pixi/.pixi
+# Replace the old conda-lock install with the Pixi-built environment.
+# Only .pixi/envs is copied, never the whole .pixi dir: the builder's
+# rattler package cache (~1.5 GB of duplicate .tar.zst) has no use at
+# runtime (PIXI_LOCKED means nothing installs at launch).
+COPY --from=seurat-env /opt/seurat-pixi/.pixi/envs /opt/seurat-pixi/.pixi/envs
 RUN mkdir -p /usr/local/conda/envs \
  && ln -s /opt/seurat-pixi/.pixi/envs/default /usr/local/conda/envs/seurat
 
@@ -86,4 +89,32 @@ WORKDIR ${HOME}
 
 EXPOSE 8787
 
+ENTRYPOINT ["/tini", "-g", "--", "./start-script.sh"]
+
+# ---- Size trims applied in this image ----
+# 1. Only .pixi/envs is copied (builder's rattler cache, ~1.5 GB, dropped).
+# 2. Layer flattening (below): image size is the SUM of all layers, so dead
+#    weight from the old conda-lock flow and deleted files still shipped.
+#    The final stage rewrites the assembled root filesystem as one flattened
+#    layer; the config the runtime needs is re-declared. The base's PASSWORD
+#    env is deliberately not re-declared: DISABLE_AUTH=1 (the course setup)
+#    means the start script never reads it.
+# This stage is the default build target, so GitHub Actions builds the same
+# flattened image without any workflow change.
+FROM scratch
+COPY --from=course / /
+ENV PATH="/usr/local/conda/envs/seurat/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    USER=jovyan \
+    GROUP=users \
+    UID=1000 \
+    DISABLE_AUTH=1 \
+    HOME=/home/jovyan \
+    R_HOME=/usr/local/conda/envs/seurat/lib/R \
+    LD_PRELOAD=/opt/rossetafix/libnosigtrap.so
+USER jovyan
+WORKDIR /home/jovyan
+EXPOSE 8787
 ENTRYPOINT ["/tini", "-g", "--", "./start-script.sh"]
