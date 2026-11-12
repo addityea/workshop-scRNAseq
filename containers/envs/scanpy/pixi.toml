@@ -1,5 +1,5 @@
 [workspace]
-authors = ["Susanne Reinsbach <susanne.reinsbach@scilifelab.se>"]
+authors = ["Susanne Reinsbach <susanne.reinsbach@scilifelab.se>", "Aditya Singh <aditya.singh@nbis.se>"]
 channels = ["conda-forge", "bioconda"]
 name = "scanpy-2026"
 platforms = ["linux-64"]

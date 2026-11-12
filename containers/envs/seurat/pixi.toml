@@ -6,7 +6,7 @@
 # Bioconductor labs hardcode as basilisk `condapath`. The start script puts
 # the env on PATH; conda itself is not installed.
 [workspace]
-authors = ["NBIS workshop-scRNAseq course team"]
+authors = ["NBIS workshop-scRNAseq course team", "Aditya Singh <aditya.singh@nbis.se>"]
 channels = ["conda-forge", "bioconda"]
 name = "seurat-bioc-2026"
 platforms = ["linux-64"]
