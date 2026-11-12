@@ -16,6 +16,9 @@ fa2_modified = "==0.4"
 gseapy = ">=1.1.11,<2"
 harmonypy = ">=0.2.0,<0.3"
 ipykernel = ">=7.2.0,<8"
+# JupyterLab itself lives in the Pixi env so the conda runtime of the
+# serve-jupyterlab-minimal base can be deleted from the image entirely.
+jupyterlab = ">=4.3,<5"
 leidenalg = ">=0.11.0,<0.12"
 matplotlib-base = ">=3.10.8,<4"
 matplotlib-venn = ">=1.1.2,<2"

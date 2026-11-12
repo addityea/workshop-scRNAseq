@@ -34,12 +34,25 @@ ENV LD_PRELOAD=/opt/rossetafix/libnosigtrap.so
 COPY scripts/install_scanpy.sh /tmp/scripts/
 RUN /tmp/scripts/install_scanpy.sh
 
-ENV PATH="${HOME}/.pixi/bin:$PATH"
+ENV PATH="${HOME}/.pixi/envs/default/bin:${HOME}/.pixi/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # Prebuilt environment + manifest (pixi run stays instant, nothing installs
 # at container launch)
 COPY --from=scanpy-env /home/jovyan/.pixi/envs /home/jovyan/.pixi/envs
 COPY envs/scanpy/pixi.toml envs/scanpy/pixi.lock /home/jovyan/
+
+# The serve-jupyterlab-minimal base carries a full conda installation
+# (/opt/conda) whose only job was to run JupyterLab; the Pixi env ships
+# JupyterLab now, so conda goes away entirely: students' terminal python/pip
+# resolve to the course env, no "(base)" prompt, and the image loses ~850 MB.
+# The base's HEALTHCHECK runs /etc/jupyter/docker_healthcheck.py through
+# python3, which lived in conda, so it is re-pointed at the Pixi python.
+RUN rm -rf /opt/conda && \
+    sed -i '/conda shell.bash hook/d; /conda initialize/d' \
+        /etc/skel/.bashrc /home/jovyan/.bashrc 2>/dev/null || true
+
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=3 \
+    CMD /home/jovyan/.pixi/envs/default/bin/python /etc/jupyter/docker_healthcheck.py || exit 1
 
 # Configure container start
 COPY scripts/scanpy-start-script.sh ${HOME}/start-script.sh
