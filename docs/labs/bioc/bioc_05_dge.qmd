@@ -36,7 +36,7 @@ fetch_data <- TRUE
 
 # url for source and intermediate data
 path_data <- "https://nextcloud.dc.scilifelab.se/public.php/webdav"
-curl_upass <- "-u zbC5fr2LbEZ9rSE:scRNAseq2025"
+curl_upass <- "-u zbC5fr2LbEZ9rSE:scRNAseq2025 --fail"
 
 path_file <- "data/covid/results/bioc_covid_qc_dr_int_cl.rds"
 if (!dir.exists(dirname(path_file))) dir.create(dirname(path_file), recursive = TRUE)

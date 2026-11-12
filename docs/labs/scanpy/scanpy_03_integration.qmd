@@ -61,7 +61,7 @@ if not os.path.exists(path_results):
 path_file = "data/covid/results/scanpy_covid_qc_dr.h5ad"
 if fetch_data and not os.path.exists(path_file):
     file_url = os.path.join(path_data, "covid/results_scanpy/scanpy_covid_qc_dr.h5ad")
-    subprocess.call(["curl", "-u", curl_upass, "-o", path_file, file_url ])
+    subprocess.call(["curl", "--fail", "-u", curl_upass, "-o", path_file, file_url ])
 
 adata = sc.read_h5ad(path_file)
 adata

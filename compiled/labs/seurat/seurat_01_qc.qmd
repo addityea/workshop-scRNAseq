@@ -29,7 +29,7 @@ fetch_annotation <- TRUE
 
 # url for source and intermediate data
 path_data <- "https://nextcloud.dc.scilifelab.se/public.php/webdav"
-curl_upass <- "-u zbC5fr2LbEZ9rSE:scRNAseq2025"
+curl_upass <- "-u zbC5fr2LbEZ9rSE:scRNAseq2025 --fail"
 
 path_covid <- "./data/covid/raw"
 if (!dir.exists(path_covid)) dir.create(path_covid, recursive = T)
