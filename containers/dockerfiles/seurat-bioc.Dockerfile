@@ -70,7 +70,7 @@ RUN /opt/seurat-pixi/.pixi/envs/default/bin/Rscript -e ' \
 # download from the celltyping lab.
 RUN /opt/seurat-pixi/.pixi/envs/default/bin/Rscript -e ' \
   SeuratData::InstallData("pbmcref"); \
-  if (!"pbmcref" %in% names(SeuratData::InstalledData())) stop("pbmcref reference not baked")'
+  if (!requireNamespace("pbmcref.SeuratData", quietly = TRUE)) stop("pbmcref reference not baked")'
 
 FROM ghcr.io/scilifelabdatacentre/serve-rstudio:250304-1611 AS course
 
