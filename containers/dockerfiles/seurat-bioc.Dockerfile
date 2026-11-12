@@ -22,6 +22,11 @@ FROM ghcr.io/prefix-dev/pixi:0.84.1 AS seurat-env
 COPY envs/seurat/pixi.toml envs/seurat/pixi.lock /opt/seurat-pixi/
 WORKDIR /opt/seurat-pixi
 RUN pixi install --frozen
+# Bioconductor *data* packages (e.g. GenomeInfoDbData) deliver their payload
+# via conda post-link scripts, which pixi/rattler does not execute. Install
+# the one data package this env needs from the Bioconductor release server,
+# matching the env's Bioconductor version (3.18, see lock biocversion).
+RUN Rscript -e 'BiocManager::install("GenomeInfoDbData", lib = file.path(R.home("library")), version = "3.18", update = FALSE, ask = FALSE)'
 
 FROM ghcr.io/scilifelabdatacentre/serve-rstudio:250304-1611
 
