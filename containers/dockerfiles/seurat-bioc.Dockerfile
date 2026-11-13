@@ -100,6 +100,25 @@ ENV R_HOME="/usr/local/conda/envs/seurat/lib/R"
 # profile.d snippet that re-prepends the course env.
 COPY scripts/seurat-env-profile.sh /etc/profile.d/zz-seurat-env.sh
 
+# ---- Trim the base image's apt R (~270 MB, unused) ----
+# The serve-rstudio base ships a full apt R 4.4.3 (r-base-core 46 MB plus a
+# manually installed /usr/local/lib/R site-library, 199 MB). Nothing in the
+# course uses it: the start script pins RStudio to the Pixi R via
+# --rsession-which-r, and quarto/Jupyter follow PATH (Pixi first). But
+# rserver, run as the non-root Serve user (UID 1000, exactly how SciLifeLab
+# Serve starts containers), aborts at startup unless an R exists at the
+# canonical /usr/lib/R path, so a compatibility symlink to the Pixi R home
+# replaces the 270 MB. Verified: rserver starts, rsession spawns as jovyan,
+# and all course packages load from the Pixi library.
+RUN export DEBIAN_FRONTEND=noninteractive \
+ && dpkg --purge r-base r-base-dev r-recommended r-base-core \
+      r-cran-boot r-cran-class r-cran-cluster r-cran-codetools \
+      r-cran-foreign r-cran-kernsmooth r-cran-lattice r-cran-mass \
+      r-cran-matrix r-cran-mgcv r-cran-nlme r-cran-nnet r-cran-rpart \
+      r-cran-spatial r-cran-survival \
+ && rm -rf /usr/local/lib/R /usr/lib/R \
+ && ln -s /usr/local/conda/envs/seurat/lib/R /usr/lib/R
+
 # Configure container start
 COPY scripts/seurat-start-script.sh ${HOME}/start-script.sh
 COPY scripts/download-labs.sh ${HOME}/download-labs.sh
