@@ -21,7 +21,6 @@ apt-get install -y --no-install-recommends \
     libxt6 \
     locales \
     patch \
-    software-properties-common \
     vim
 
 apt-get update && apt-get install -y git
@@ -29,9 +28,10 @@ apt-get update && apt-get install -y git
 echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
 locale-gen
 
-add-apt-repository ppa:ubuntu-toolchain-r/test
-apt-get -yq update
-apt-get -yq install --no-install-recommends libstdc++6
+## NOTE: the old ppa:ubuntu-toolchain-r/test repo (for a newer libstdc++6)
+## has been retired upstream; the PPA lookup broke the build. The conda/Pixi
+## env carries its own libstdc++ via RPATH, so the system one is not used
+## by R. Dropping the PPA lines entirely.
 
 ## Install tini
 curl -o /tini -sL https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini
@@ -42,27 +42,9 @@ curl -o quarto-linux-amd64.deb -sL https://github.com/quarto-dev/quarto-cli/rele
     && apt-get install -y ./quarto-linux-amd64.deb \
     && rm -rf ./quarto-linux-amd64.deb \
 
-## Install Miniconda
-curl -o ${HOME}/miniconda.sh -sL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash ${HOME}/miniconda.sh -bfp /usr/local/conda
-rm -rf ${HOME}/miniconda.sh
-
-/usr/local/conda/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
-/usr/local/conda/bin/conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
-
-## Init conda for root and jovyan users
-/usr/local/conda/bin/conda init bash
-su - ${USER} -c "/usr/local/conda/bin/conda init bash"
-source ${HOME}/.bashrc
-
-## Install mamba
-conda install --yes -n base -c conda-forge mamba
-eval "$(mamba shell hook --shell bash)"
-mamba shell init --shell bash
-source ${HOME}/.bashrc
-
-## Install conda-lock
-mamba install --yes --channel conda-forge conda-lock
+## NOTE: Miniconda used to be installed here. It is gone: the course
+## environment comes from Pixi (containers/envs/seurat) and is placed at
+## /usr/local/conda/envs/seurat, which the start script puts on PATH.
 
 ## Clean up
 apt-get clean

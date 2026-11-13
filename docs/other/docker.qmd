@@ -36,58 +36,29 @@ On Macs with Apple Silicon, in Docker Settings > General, check **Use Rosetta fo
 
 #### Running Linux x86_64 Containers on Apple Silicon
 
-Apple Silicon (M-series chips) uses the ARM64 architecture. Many Linux images are built for x86_64 (Intel/AMD). While Docker Desktop has built-in emulation, it can be unstable or fail for specific system calls.
+Apple Silicon (M-series chips) uses the ARM64 architecture, while the course images are built for x86_64 (Intel/AMD). Docker Desktop runs these images through emulation, and the fast and stable option is **Rosetta**, Apple's built-in x86 translation layer. Rosetta is not always enabled by default, so check it before the course:
 
-Colima provides a more robust virtualization layer for macOS, allowing you to run a dedicated x86_64 guest environment that handles these containers more reliably.
-
-**Installation**
-
-Ensure you have Homebrew installed, then run the following to install Colima and its required virtualization dependencies:
-
-```sh
-brew install colima qemu lima-additional-guestagents
-```
-
-**Start the x86_64 Environment**
-
-::: {.callout-important}
-Docker Desktop and Colima should not run at the same time. You must stop Docker Desktop before starting Colima.
-:::
-
-```sh
-# Stop Docker Desktop via CLI (or quit the app manually from the UI)
-docker desktop stop
-```
-
-**Initialize Colima with x86_64 emulation**
-
-```sh
-colima start --arch x86_64 --cpu 4 --memory 16 --disk 50
-```
-
-**File Permissions & Mounting**
-
-When mounting local macOS directories into an x86_64 container via Colima, you may encounter Permission Denied errors. This happens because the file ownership mapping between the macOS host and the Linux VM can be problematic. To bypass these issues, it is recommended to mount a Docker native volume (_e.g._ `-v scanpy-labs:/home/jovyan/work`) instead of mounting a local directory.
-
-**Switching Docker Contexts**
+1. Open the Docker Desktop Dashboard, go to *Settings ({{< fa gear >}} in the top-right) > General*.
+2. Tick **Use Rosetta for x86/amd64 emulation on Apple Silicon**. If the option is greyed out, also tick **Use the Virtualization framework** under *Settings > Resources > Advanced*, restart Docker Desktop, and try again.
+3. Restart Docker Desktop to apply the change.
 
 ::: {.callout-tip}
-Run `docker context ls` to verify which engine is currently active. The entry marked with an asterisk (*) is your current target.
+You can verify Rosetta emulation is active by running:
+
+```sh
+docker run --rm --platform=linux/amd64 alpine uname -m
+```
+
+It should print `x86_64` without the slow QEMU warnings some setups show. If the course images start and the labs run, you are all set.
 :::
 
-You can toggle between the Colima (x86) environment and the native Docker Desktop (ARM) environment using these commands:
+::: {.callout-note}
+When you run `docker run` with `--platform=linux/amd64` on an Apple Silicon machine, Docker prints an image-platform warning. That warning is expected here and can be ignored: running x86 images through Rosetta is exactly what we want.
+:::
 
-To use Colima (x86_64):
-```sh
-docker desktop stop  # Or quit manually from the UI
-colima start
-```
-
-To switch back to Docker Desktop (Native):
-```sh
-colima stop
-docker desktop start # Or open the app manually from Applications
-```
+::: {.callout-important}
+On macOS 26 (Tahoe) and later, there is a known Rosetta bug where Jupyter/RStudio kernels in x86_64 containers hang forever at "Starting kernel..." (see [apple/container#966](https://github.com/apple/container/issues/966)). The 2026 course images ship a workaround (`libnosigtrap.so`, loaded automatically via `LD_PRELOAD`), so kernels start normally. If you use an older image tag and hit this hang, pull the current `latest` tag.
+:::
 
 ### {{< fa brands windows >}} Windows
 
